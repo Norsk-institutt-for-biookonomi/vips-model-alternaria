@@ -382,11 +382,7 @@ public class AlternariaModel extends I18nImpl implements Model{
                                     
 
         WeatherUtil                 weatherUtil                                     =   new WeatherUtil();
-        List<WeatherObservation>    observations                                    =   mapper.convertValue
-                                                                                        (
-                                                                                                config.getConfigParameter("observations")
-                                                                                            ,   new TypeReference<List<WeatherObservation>>(){}
-                                                                                        );
+        List<WeatherObservation>    observations                                    =   modelUtil.extractWeatherObservationList(config.getConfigParameter("observations"));
         List<Date>                  sprayingDates                                   =   null;
         List<WeatherObservation>    altenariaWeatherLIstHourly_tm                   =   new ArrayList<WeatherObservation>();
         List<WeatherObservation>    altenariaWeatherLIstHourly_lw                   =   new ArrayList<WeatherObservation>();
