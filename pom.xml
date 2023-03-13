@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>no.nibio.vips.common</groupId>
+            <groupId>no.nibio.vips</groupId>
             <artifactId>VIPSCommon</artifactId>
             <version>2022.1</version>
         </dependency>
