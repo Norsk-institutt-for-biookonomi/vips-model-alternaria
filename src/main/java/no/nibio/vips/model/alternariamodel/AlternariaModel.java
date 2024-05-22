@@ -74,6 +74,7 @@ public class AlternariaModel extends I18nImpl implements Model{
     public final static int         THRESHOLD_LW        =   30;                         // Threshold for leave wetness
     public final static int         THRESHOLD_DSV_MAX   =   20;                         // Threshold Minimum for DSV 
     public final static int         THRESHOLD_DSV_DIFF_MIN_MAX  =   5;                         // Threshold Maximum for DSV 
+    private Double                  THRESHOLD_DSV_TEMP_MIN = 13.0; // Minimum temp for getting a DSV value
     
     public final static String      YES                 =   "Y";                        //   Spray Date
     public final static String      NO                  =   "N"; 
@@ -559,11 +560,11 @@ public class AlternariaModel extends I18nImpl implements Model{
     public int getDSV_DAILY(double temp, int lw )
     {
         int dsvResult = 0;
-
-        if ((temp >= 10  && temp <= 17) && (lw <= 6))                   dsvResult  =    0;
-        if ((temp >= 10  && temp <= 17) && (lw >= 7  && lw  <= 15 ))    dsvResult  =    1;
-        if ((temp >= 10  && temp <= 17) && (lw >= 16 && lw  <= 20 ))    dsvResult  =    2;
-        if ((temp >= 10  && temp <= 17) && (lw > 21 ))                  dsvResult  =    3;
+        
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN  && temp <= 17) && (lw <= 6))                   dsvResult  =    0;
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN  && temp <= 17) && (lw >= 7  && lw  <= 15 ))    dsvResult  =    1;
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN  && temp <= 17) && (lw >= 16 && lw  <= 20 ))    dsvResult  =    2;
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN  && temp <= 17) && (lw > 21 ))                  dsvResult  =    3;
         
         if ((temp >= 18  && temp <= 20) && (lw <= 3 ))                  dsvResult =     0;
         if ((temp >= 18  && temp <= 20) && (lw >= 4  && lw <= 8 ))      dsvResult =     1;
