@@ -25,6 +25,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.DynamicTest.stream;
 
 /**
  *
@@ -102,6 +103,90 @@ public class AlternariaModelTest {
             System.out.println(res.toString());
         }
        */ 
+        
+        
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testGetResultWithThresholdDSVTempMin() throws Exception {
+        System.out.println("getResultWithThresholdDSVTempMin");
+        ModelConfiguration config   = this.getConfiguration(getWeatherDataFile());
+        config.setConfigParameter("sprayingDates", this.getConfigurationSprayingDates(getResetDataFile())); 
+        config.setConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME, 10.0);
+        AlternariaModel instance = new AlternariaModel();
+        instance.setConfiguration(config);
+        List<Result> result = instance.getResult();
+        assertNotNull(result);
+       
+        config.setConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME, "10.0");
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /* 
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        }*/
+
+        config.setConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME, "13.0");
+        //System.out.println(config.toJSON());
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /*
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        } */
+        
+        
+        
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testGetResultWithThresholdDSVMax() throws Exception {
+        System.out.println("getResultWithThresholdDSVMax");
+        ModelConfiguration config   = this.getConfiguration(getWeatherDataFile());
+        config.setConfigParameter("sprayingDates", this.getConfigurationSprayingDates(getResetDataFile())); 
+        config.setConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME, 21);
+        AlternariaModel instance = new AlternariaModel();
+        instance.setConfiguration(config);
+        List<Result> result = instance.getResult();
+        assertNotNull(result);
+       
+        config.setConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME, "21");
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /* 
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        }*/
+
+        config.setConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME, "13.0");
+        //System.out.println(config.toJSON());
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /*
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        } */
+        
         
         
     }

@@ -71,9 +71,11 @@ public class AlternariaModel extends I18nImpl implements Model {
     public final static String NAME_MODEL_ID = "ALTERNARIA";
     public final static ModelId MODEL_ID = new ModelId(NAME_MODEL_ID);
     public final static int THRESHOLD_LW = 30; // Threshold for leave wetness
-    public final static int THRESHOLD_DSV_MAX = 20; // Threshold Minimum for DSV
+    private Double THRESHOLD_DSV_MAX = 20.0; // Threshold Minimum for DSV
+    public final static String THRESHOLD_DSV_MAX_NAME = "thresholdDSVMax";
     public final static int THRESHOLD_DSV_DIFF_MIN_MAX = 5; // Threshold Maximum for DSV
     private Double THRESHOLD_DSV_TEMP_MIN = 13.0; // Minimum temp for getting a DSV value
+    public final static String THRESHOLD_DSV_TEMP_MIN_NAME = "thresholdDSVTempMin";
 
     public final static String YES = "Y"; // Spray Date
     public final static String NO = "N";
@@ -419,6 +421,16 @@ public class AlternariaModel extends I18nImpl implements Model {
         List<Date> sprayingDates = null;
         List<WeatherObservation> altenariaWeatherLIstHourly_tm = new ArrayList<WeatherObservation>();
         List<WeatherObservation> altenariaWeatherLIstHourly_lw = new ArrayList<WeatherObservation>();
+
+        try
+        {
+            this.THRESHOLD_DSV_TEMP_MIN = config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME) != null ? modelUtil.getDouble(config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME)): this.THRESHOLD_DSV_TEMP_MIN;
+            this.THRESHOLD_DSV_MAX = config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME) != null ? modelUtil.getDouble(config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME)) : this.THRESHOLD_DSV_MAX;
+        }
+        catch(ClassCastException ex)
+        {
+            throw new ConfigValidationException(ex.getMessage());
+        }
 
         Date dateHourlyTm_currentDay = null;
         Date dateHourlyTm_previousDay = null;
