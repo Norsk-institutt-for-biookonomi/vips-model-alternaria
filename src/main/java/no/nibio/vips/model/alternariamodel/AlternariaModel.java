@@ -72,11 +72,8 @@ public class AlternariaModel extends I18nImpl implements Model {
     public final static ModelId MODEL_ID = new ModelId(NAME_MODEL_ID);
     public final static int THRESHOLD_LW = 30; // Threshold for leave wetness
     private Double THRESHOLD_DSV_MAX = 20.0; // Threshold Minimum for DSV
-    public final static String THRESHOLD_DSV_MAX_NAME = "thresholdDSVMax";
     public final static int THRESHOLD_DSV_DIFF_MIN_MAX = 5; // Threshold Maximum for DSV
     private Double THRESHOLD_DSV_TEMP_MIN = 13.0; // Minimum temp for getting a DSV value
-    public final static String THRESHOLD_DSV_TEMP_MIN_NAME = "thresholdDSVTempMin";
-
     public final static String YES = "Y"; // Spray Date
     public final static String NO = "N";
 
@@ -151,6 +148,7 @@ public class AlternariaModel extends I18nImpl implements Model {
             result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_BASE,
                     String.valueOf(THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX));
             result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_MAX, String.valueOf(THRESHOLD_DSV_MAX));
+            result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_TEMP_MIN, String.valueOf(this.THRESHOLD_DSV_TEMP_MIN));
 
             results.add(result);
 
@@ -424,8 +422,8 @@ public class AlternariaModel extends I18nImpl implements Model {
 
         try
         {
-            this.THRESHOLD_DSV_TEMP_MIN = config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME) != null ? modelUtil.getDouble(config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_TEMP_MIN_NAME)): this.THRESHOLD_DSV_TEMP_MIN;
-            this.THRESHOLD_DSV_MAX = config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME) != null ? modelUtil.getDouble(config.getConfigParameter(AlternariaModel.THRESHOLD_DSV_MAX_NAME)) : this.THRESHOLD_DSV_MAX;
+            this.THRESHOLD_DSV_TEMP_MIN = config.getConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN) != null ? modelUtil.getDouble(config.getConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN)): this.THRESHOLD_DSV_TEMP_MIN;
+            this.THRESHOLD_DSV_MAX = config.getConfigParameter(DataMatrix.THRESHOLD_DSV_MAX) != null ? modelUtil.getDouble(config.getConfigParameter(DataMatrix.THRESHOLD_DSV_MAX)) : this.THRESHOLD_DSV_MAX;
         }
         catch(ClassCastException ex)
         {

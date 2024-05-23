@@ -42,6 +42,7 @@ import no.nibio.vips.util.DateMap;
 /**
  *
  * @author bhabesh
+ * @author Tor-Einar Skog <tor-einar.skog@nibio.no>
  */
 public class DataMatrix extends DateMap{
     public final static String  WET_HOUR                        =   "WH";           //  Leaf wetness 2 m, minutes per hour
@@ -53,8 +54,8 @@ public class DataMatrix extends DateMap{
     public final static String  SPRAYING_DATE                   =   "sprayingDate"; //   Spray Date
     
     public final static String  THRESHOLD_DSV_BASE              =   "THRESHOLD_DSV_BASE"; //   THRESHOLD_DSV_BASE
-    public final static String  THRESHOLD_DSV_MAX               =   "THRESHOLD_DSV_MAX"; //   THRESHOLD_DSV_MAX
-
+    public final static String  THRESHOLD_DSV_MAX               =   "thresholdDSVMax"; //   THRESHOLD_DSV_MAX
+    public final static String THRESHOLD_DSV_TEMP_MIN           =   "thresholdDSVTempMin";
     
     
     
