@@ -3,7 +3,7 @@
  * Organization			:	NIBIO, Ås
  * Department			:	VIPS
  * 
- * Author			:	bhabesh
+ * Author			:	bhabesh & Tor-Einar Skog
  *
  * 
  * File Name			:	DataMatrix.java
@@ -16,22 +16,23 @@
  */
 /*
  * 
-
-Copyright (c) 2016 NIBIO <http://www.nibio.no/>. 
-            
-This file is part of AlternariaModel.  
-AlternariaModel is free software: you can redistribute it and/or modify  
-it under the terms of the NIBIO Open Source License as published by  
-NIBIO, either version 1 of the License, or (at your option) any 
-later version. 
-
-AlternariaModel is distributed in the hope that it will be useful, 
-but WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
-NIBIO Open Source License for more details. 
-
-You should have received a copy of the NIBIO Open Source License 
-along with AlternariaModel.  If not, see <http://www.nibio.no/licenses/>.
+ * 
+ * Copyright (c) 2020-2024 NIBIO <http://www.nibio.no/>. 
+ *             
+ * This file is part of AlternariaModel.  
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
@@ -42,6 +43,7 @@ import no.nibio.vips.util.DateMap;
 /**
  *
  * @author bhabesh
+ * @author Tor-Einar Skog <tor-einar.skog@nibio.no>
  */
 public class DataMatrix extends DateMap{
     public final static String  WET_HOUR                        =   "WH";           //  Leaf wetness 2 m, minutes per hour
@@ -53,8 +55,8 @@ public class DataMatrix extends DateMap{
     public final static String  SPRAYING_DATE                   =   "sprayingDate"; //   Spray Date
     
     public final static String  THRESHOLD_DSV_BASE              =   "THRESHOLD_DSV_BASE"; //   THRESHOLD_DSV_BASE
-    public final static String  THRESHOLD_DSV_MAX               =   "THRESHOLD_DSV_MAX"; //   THRESHOLD_DSV_MAX
-
+    public final static String  THRESHOLD_DSV_MAX               =   "thresholdDSVMax"; //   THRESHOLD_DSV_MAX
+    public final static String THRESHOLD_DSV_TEMP_MIN           =   "thresholdDSVTempMin";
     
     
     

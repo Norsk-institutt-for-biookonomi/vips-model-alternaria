@@ -1,7 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (c) 2020 NIBIO <http://www.nibio.no/>. 
+            
+This file is part of AlternariaModel.  
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package no.nibio.vips.model.alternariamodel;
 
@@ -25,6 +37,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.DynamicTest.stream;
 
 /**
  *
@@ -106,6 +119,90 @@ public class AlternariaModelTest {
         
     }
 
+    @org.junit.jupiter.api.Test
+    public void testGetResultWithThresholdDSVTempMin() throws Exception {
+        System.out.println("getResultWithThresholdDSVTempMin");
+        ModelConfiguration config   = this.getConfiguration(getWeatherDataFile());
+        config.setConfigParameter("sprayingDates", this.getConfigurationSprayingDates(getResetDataFile())); 
+        config.setConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN, 10.0);
+        AlternariaModel instance = new AlternariaModel();
+        instance.setConfiguration(config);
+        List<Result> result = instance.getResult();
+        assertNotNull(result);
+       
+        config.setConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN, "10.0");
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /* 
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        }*/
+
+        config.setConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN, "13.0");
+        //System.out.println(config.toJSON());
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /*
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        } */
+        
+        
+        
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testGetResultWithThresholdDSVMax() throws Exception {
+        System.out.println("getResultWithThresholdDSVMax");
+        ModelConfiguration config   = this.getConfiguration(getWeatherDataFile());
+        config.setConfigParameter("sprayingDates", this.getConfigurationSprayingDates(getResetDataFile())); 
+        config.setConfigParameter(DataMatrix.THRESHOLD_DSV_MAX, 21);
+        AlternariaModel instance = new AlternariaModel();
+        instance.setConfiguration(config);
+        List<Result> result = instance.getResult();
+        assertNotNull(result);
+       
+        config.setConfigParameter(DataMatrix.THRESHOLD_DSV_MAX, "21");
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /* 
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        }*/
+
+        config.setConfigParameter(DataMatrix.THRESHOLD_DSV_MAX, "13.0");
+        //System.out.println(config.toJSON());
+
+        instance.setConfiguration(config);
+        result = instance.getResult();
+        assertNotNull(result);
+       
+        /*
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        } */
+        
+        
+        
+    }
+
     /**
      * Test of getModelId method, of class AlternariaModel.
      */
@@ -149,9 +246,8 @@ public class AlternariaModelTest {
     public void testGetLicense() {
         System.out.println("getLicense");
         AlternariaModel instance = new AlternariaModel();
-        String expResult = "";
         String result = instance.getLicense();
-        assertNotNull(result);
+        assertTrue(result.contains("GNU Affero"));
     }
 
     /**
@@ -251,15 +347,13 @@ public class AlternariaModelTest {
 
     /**
      * Test of getSampleConfig method, of class AlternariaModel.
-     * TODO - Recheck the functionality
      */
     @org.junit.jupiter.api.Test
     public void testGetSampleConfig() {
         System.out.println("getSampleConfig");
         AlternariaModel instance = new AlternariaModel();
-        String expResult = "";
         String result = instance.getSampleConfig();
-        assertNotNull(result);
+        assertTrue(result.contains("configParameters"));
     }
 
     /**

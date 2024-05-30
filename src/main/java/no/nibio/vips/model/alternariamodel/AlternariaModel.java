@@ -39,13 +39,17 @@ package no.nibio.vips.model.alternariamodel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,133 +66,139 @@ import no.nibio.vips.util.CommonNamespaces;
 import no.nibio.vips.util.ModelUtil;
 import no.nibio.vips.util.WeatherUtil;
 
-
 /**
  *
  * @author bhabesh
  */
-public class AlternariaModel extends I18nImpl implements Model{
-    public final static Logger      LOGGER              =   Logger.getLogger(AlternariaModel.class.getName());
-    public final static String      NAME_MODEL_ID       =   "ALTERNARIA";
-    public final static ModelId     MODEL_ID            =   new ModelId(NAME_MODEL_ID);
-    public final static int         THRESHOLD_LW        =   30;                         // Threshold for leave wetness
-    public final static int         THRESHOLD_DSV_MAX   =   20;                         // Threshold Minimum for DSV 
-    public final static int         THRESHOLD_DSV_DIFF_MIN_MAX  =   5;                         // Threshold Maximum for DSV 
-    
-    public final static String      YES                 =   "Y";                        //   Spray Date
-    public final static String      NO                  =   "N"; 
-    
-  
-    private   final   ModelUtil   modelUtil;
-    private           DataMatrix  dataMatrix;
-  
-    private           TimeZone    timeZone;
-  
-    public AlternariaModel()
-    {
+public class AlternariaModel extends I18nImpl implements Model {
+    public final static Logger LOGGER = Logger.getLogger(AlternariaModel.class.getName());
+    public final static String NAME_MODEL_ID = "ALTERNARIA";
+    public final static ModelId MODEL_ID = new ModelId(NAME_MODEL_ID);
+    public final static int THRESHOLD_LW = 30; // Threshold for leave wetness
+    private Double THRESHOLD_DSV_MAX = 20.0; // Threshold Minimum for DSV
+    public final static int THRESHOLD_DSV_DIFF_MIN_MAX = 5; // Threshold Maximum for DSV
+    private Double THRESHOLD_DSV_TEMP_MIN = 13.0; // Minimum temp for getting a DSV value
+    public final static String YES = "Y"; // Spray Date
+    public final static String NO = "N";
+
+    private final ModelUtil modelUtil;
+    private DataMatrix dataMatrix;
+
+    private TimeZone timeZone;
+
+    public AlternariaModel() {
         super("no.nibio.vips.model.alternariamodel.texts");
-        this.modelUtil    = new ModelUtil();
+        this.modelUtil = new ModelUtil();
     }
-          
+
     @Override
-    public List<Result> getResult() throws ModelExcecutionException
-    {
-        
+    public List<Result> getResult() throws ModelExcecutionException {
+
         /**
          * method name : getResult
-         * @param      :
-         * @return     : java.util.List<no.nibio.vips.entity.Result>
+         * 
+         * @param :
+         * @return : java.util.List<no.nibio.vips.entity.Result>
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                //TODO write proper list of result object
-        
-        //Date            currentDate     =   this.dataMatrix.getFirstDateWithParameterValue(DataMatrix.LEAF_WETNESS_DURATION);
-        List<Result>    results         =   new ArrayList<>();
-        
-        Date            currentDate     =   this.dataMatrix.getFirstDateWithParameterValue(DataMatrix.TEMPERATURE_MEAN);
-        Date            endDate         =   this.dataMatrix.getLastDateWithParameterValue(DataMatrix.TEMPERATURE_MEAN);
-        DecimalFormat   dFormat         =   new DecimalFormat("###.##");
-        DecimalFormat   iFormat         =   new DecimalFormat("###");
-        Calendar        cal             =   Calendar.getInstance(timeZone);
-        int             accumulatedDSV  =   0;
-        
-        while(currentDate.before(endDate))
-        {
-            Result              result              = new ResultImpl();
-            
-                                if(null == dataMatrix.getParamStringValueForDate(currentDate, DataMatrix.SPRAYING_DATE))
-                                {
-                                    // DO Nothing -- Consider same accumulatedDSV
-                                }
-                                else
-                                {
-                                    if(dataMatrix.getParamStringValueForDate(currentDate, DataMatrix.SPRAYING_DATE).equals(YES))
-                                    {
-                                        accumulatedDSV  = 0;
-                                    }
-                                    else
-                                
-                                    {
-                                        accumulatedDSV      =   accumulatedDSV  +   dataMatrix.getParamIntValueForDate(currentDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE);
-                                    }
-                                }
-                                    
-                                
-                    result.setValidTimeStart(currentDate);
-                    result.setWarningStatus(getWarningStatus(accumulatedDSV));
+        // throw new UnsupportedOperationException("Not supported yet."); //To change
+        // body of generated methods, choose Tools | Templates.
+        // TODO write proper list of result object
 
-                    result.setValue(CommonNamespaces.NS_WEATHER, DataMatrix.TEMPERATURE_MEAN, dFormat.format(this.dataMatrix.getParamValueForDate(currentDate, DataMatrix.TEMPERATURE_MEAN)));
-                    result.setValue(NAME_MODEL_ID, DataMatrix.WET_HOUR, iFormat.format(this.dataMatrix.getParamValueForDate(currentDate, DataMatrix.LEAF_WETNESS_DURATION)));
-                    result.setValue(NAME_MODEL_ID, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE_SUM, iFormat.format(accumulatedDSV));
-                    result.setValue(NAME_MODEL_ID, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE, iFormat.format(this.dataMatrix.getParamValueForDate(currentDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE)));
+        // Date currentDate =
+        // this.dataMatrix.getFirstDateWithParameterValue(DataMatrix.LEAF_WETNESS_DURATION);
+        List<Result> results = new ArrayList<>();
 
-                    result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_BASE, String.valueOf(THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX));
-                    result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_MAX, String.valueOf(THRESHOLD_DSV_MAX));
-                    
-                    results.add(result);
-                    
+        Date currentDate = this.dataMatrix.getFirstDateWithParameterValue(DataMatrix.TEMPERATURE_MEAN);
+        Date endDate = this.dataMatrix.getLastDateWithParameterValue(DataMatrix.TEMPERATURE_MEAN);
+        DecimalFormat dFormat = new DecimalFormat("###.##");
+        DecimalFormat iFormat = new DecimalFormat("###");
+        Calendar cal = Calendar.getInstance(timeZone);
+        int accumulatedDSV = 0;
+
+        while (currentDate.before(endDate)) {
+            Result result = new ResultImpl();
+
+            if (null == dataMatrix.getParamStringValueForDate(currentDate, DataMatrix.SPRAYING_DATE)) {
+                // DO Nothing -- Consider same accumulatedDSV
+            } else {
+                if (dataMatrix.getParamStringValueForDate(currentDate, DataMatrix.SPRAYING_DATE).equals(YES)) {
+                    accumulatedDSV = 0;
+                } else
+
+                {
+                    accumulatedDSV = accumulatedDSV
+                            + dataMatrix.getParamIntValueForDate(currentDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE);
+                }
+            }
+
+            result.setValidTimeStart(currentDate);
+            result.setWarningStatus(getWarningStatus(accumulatedDSV));
+
+            result.setValue(CommonNamespaces.NS_WEATHER, DataMatrix.TEMPERATURE_MEAN,
+                    dFormat.format(this.dataMatrix.getParamValueForDate(currentDate, DataMatrix.TEMPERATURE_MEAN)));
+            result.setValue(NAME_MODEL_ID, DataMatrix.WET_HOUR, iFormat
+                    .format(this.dataMatrix.getParamValueForDate(currentDate, DataMatrix.LEAF_WETNESS_DURATION)));
+            result.setValue(NAME_MODEL_ID, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE_SUM, iFormat.format(accumulatedDSV));
+            result.setValue(NAME_MODEL_ID, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE, iFormat.format(
+                    this.dataMatrix.getParamValueForDate(currentDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE)));
+
+            result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_BASE,
+                    String.valueOf(THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX));
+            result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_MAX, String.valueOf(THRESHOLD_DSV_MAX));
+            result.setValue(NAME_MODEL_ID, DataMatrix.THRESHOLD_DSV_TEMP_MIN, String.valueOf(this.THRESHOLD_DSV_TEMP_MIN));
+
+            results.add(result);
+
             cal.setTime(currentDate);
             cal.add(Calendar.DATE, 1);
-            currentDate = cal.getTime();               
+            currentDate = cal.getTime();
         }
 
-        //LOGGER.log(Level.INFO, "DataMatrix-Value 03: "+dataMatrix);
+        // LOGGER.log(Level.INFO, "DataMatrix-Value 03: "+dataMatrix);
         return results;
     }
 
-
     @Override
-    public ModelId getModelId()
-    {
+    public ModelId getModelId() {
         /**
          * method name : getModelId
-         * @param      : 
-         * @return     : no.nibio.vips.model.ModelId
+         * 
+         * @param :
+         * @return : no.nibio.vips.model.ModelId
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // throw new UnsupportedOperationException("Not supported yet."); //To change
+        // body of generated methods, choose Tools | Templates.
         return AlternariaModel.MODEL_ID;
     }
 
-
     @Override
-    public String getModelName()
-    {
+    public String getModelName() {
         /**
          * method name : getModelName
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getModelName(Model.DEFAULT_LANGUAGE);
     }
@@ -196,64 +206,64 @@ public class AlternariaModel extends I18nImpl implements Model{
     /**
      * 
      * @param language
-     * @return 
+     * @return
      */
     @Override
-    public String getModelName(String language)
-    {
+    public String getModelName(String language) {
         /**
          * method name : getModelName
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getText("name", language);
     }
 
+
     @Override
-    public String getLicense()
-    {
-        /**
-         * method name : getLicense
-         * @param      :
-         * @return     : java.lang.String
-         *
-         * purpose     :
-         *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
-         */
-        return this.getText("license", Model.DEFAULT_LANGUAGE);
+    public String getLicense() {
+        return this.modelUtil.getTextFromFileInJar(this.getClass(), "/LICENSE_header.txt");
     }
 
     @Override
-    public String getCopyright()
-    {
+    public String getCopyright() {
         /**
          * method name : getCopyright
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return "(c) 2020 NIBIO (http://www.nibio.no/). Contact: post@nibio.no";
     }
 
     @Override
-    public String getModelDescription()
-    {
+    public String getModelDescription() {
         /**
          * method name : getModelDescription
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getModelDescription(Model.DEFAULT_LANGUAGE);
     }
@@ -261,507 +271,456 @@ public class AlternariaModel extends I18nImpl implements Model{
     /**
      * 
      * @param language
-     * @return 
+     * @return
      */
     @Override
-    public String getModelDescription(String language)
-    {
+    public String getModelDescription(String language) {
         /**
          * method name : getModelDescription
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
-        try
-        {
-            return this.modelUtil.getTextWithBase64EncodedImages(this.getText("description", language), this.getClass());
-        }
-        catch (IOException ex)
-        {
+        try {
+            return this.modelUtil.getTextWithBase64EncodedImages(this.getText("description", language),
+                    this.getClass());
+        } catch (IOException ex) {
             return this.getText("description", language);
         }
     }
 
     @Override
-    public String getWarningStatusInterpretation()
-    {
+    public String getWarningStatusInterpretation() {
         /**
          * method name : getWarningStatusInterpretation
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getWarningStatusInterpretation(Model.DEFAULT_LANGUAGE);
     }
 
     @Override
-    public String getWarningStatusInterpretation(String language)
-    {
+    public String getWarningStatusInterpretation(String language) {
         /**
          * method name : getWarningStatusInterpretation
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getText("statusInterpretation", language);
     }
 
     @Override
-    public String getModelUsage()
-    {
+    public String getModelUsage() {
         /**
          * method name : getModelUsage
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getModelUsage(Model.DEFAULT_LANGUAGE);
     }
 
     @Override
-    public String getModelUsage(String language)
-    {
+    public String getModelUsage(String language) {
         /**
          * method name : getModelUsage
-         * @param      :
-         * @return     : java.lang.String
+         * 
+         * @param :
+         * @return : java.lang.String
          *
-         * purpose     :
+         *         purpose :
          *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
+         *         date : Expression date is undefined on line 20, column 19 in
+         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
+         *         undefined on line 20, column 27 in
+         *         Templates/Classes/Code/GeneratedMethodBody.
          */
         return this.getText("usage", language);
     }
 
     /**
-     * TODO
-     * @return 
+     * 
+     * 
+     * @return a Json configuration example
      */
     @Override
-    public String getSampleConfig()
-    {
-        /**
-         * method name : getSampleConfig
-         * @param      :
-         * @return     : java.lang.String
-         *
-         * purpose     :
-         *
-         * date        : Expression date is undefined on line 20, column 19 in Templates/Classes/Code/GeneratedMethodBody. Expression time is undefined on line 20, column 27 in Templates/Classes/Code/GeneratedMethodBody.
-         */
-        return this.getText("sampleconfig", Model.DEFAULT_LANGUAGE);
+    public String getSampleConfig() {
+        return this.modelUtil.getTextFromFileInJar(this.getClass(), "/sample_config.json");
     }
 
     /**
      * 
      * @param config
-     * @throws ConfigValidationException 
+     * @throws ConfigValidationException
      */
     @Override
-    public void setConfiguration(ModelConfiguration config) throws ConfigValidationException
-    {
+    public void setConfiguration(ModelConfiguration config) throws ConfigValidationException {
 
-        
-        List<WeatherObservation>    altenariaWeatherListDaily                       =   new ArrayList<WeatherObservation>();
-        
-                                    dataMatrix                                      =   new DataMatrix();
-        ObjectMapper                mapper                                          =   new ObjectMapper();
-                                    timeZone                                        =   TimeZone.getTimeZone((String)config.getConfigParameter("timeZone"));
-                                    
+        List<WeatherObservation> altenariaWeatherListDaily = new ArrayList<WeatherObservation>();
 
-        WeatherUtil                 weatherUtil                                     =   new WeatherUtil();
-        List<WeatherObservation>    observations                                    =   modelUtil.extractWeatherObservationList(config.getConfigParameter("observations"));
-        List<Date>                  sprayingDates                                   =   null;
-        List<WeatherObservation>    altenariaWeatherLIstHourly_tm                   =   new ArrayList<WeatherObservation>();
-        List<WeatherObservation>    altenariaWeatherLIstHourly_lw                   =   new ArrayList<WeatherObservation>();
-           
-        Date                        dateHourlyTm_currentDay                         =   null; 
-        Date                        dateHourlyTm_previousDay                        =   null; 
-        Date                        dateHourlyLw_currentDay                         =   null; 
-        Date                        dateHourlyLw_previousDay                        =   null; 
-        
+        dataMatrix = new DataMatrix();
+        ObjectMapper mapper = new ObjectMapper();
+        timeZone = TimeZone.getTimeZone((String) config.getConfigParameter("timeZone"));
+
+        WeatherUtil weatherUtil = new WeatherUtil();
+        List<WeatherObservation> observations = modelUtil
+                .extractWeatherObservationList(config.getConfigParameter("observations"));
+        List<Date> sprayingDates = null;
+        List<WeatherObservation> altenariaWeatherLIstHourly_tm = new ArrayList<WeatherObservation>();
+        List<WeatherObservation> altenariaWeatherLIstHourly_lw = new ArrayList<WeatherObservation>();
+
+        try
+        {
+            this.THRESHOLD_DSV_TEMP_MIN = config.getConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN) != null ? modelUtil.getDouble(config.getConfigParameter(DataMatrix.THRESHOLD_DSV_TEMP_MIN)): this.THRESHOLD_DSV_TEMP_MIN;
+            this.THRESHOLD_DSV_MAX = config.getConfigParameter(DataMatrix.THRESHOLD_DSV_MAX) != null ? modelUtil.getDouble(config.getConfigParameter(DataMatrix.THRESHOLD_DSV_MAX)) : this.THRESHOLD_DSV_MAX;
+        }
+        catch(ClassCastException ex)
+        {
+            throw new ConfigValidationException(ex.getMessage());
+        }
+
+        Date dateHourlyTm_currentDay = null;
+        Date dateHourlyTm_previousDay = null;
+        Date dateHourlyLw_currentDay = null;
+        Date dateHourlyLw_previousDay = null;
+
         WeatherUtil wUtil = new WeatherUtil();
-                // Setting timezone
+        // Setting timezone
         this.timeZone = TimeZone.getTimeZone((String) config.getConfigParameter("timeZone"));
 
-                                    sprayingDates                                   =   (null == mapper.convertValue(config.getConfigParameter(DataMatrix.SPRAYING_DATES), new TypeReference<List<Date>>(){})) 
-                                                                                        ?   null
-                                                                                        :   mapper.convertValue(config.getConfigParameter(DataMatrix.SPRAYING_DATES), new TypeReference<List<Date>>(){});
-                            
+        sprayingDates = (null == mapper.convertValue(config.getConfigParameter(DataMatrix.SPRAYING_DATES),
+                new TypeReference<List<Date>>() {
+                }))
+                        ? null
+                        : mapper.convertValue(config.getConfigParameter(DataMatrix.SPRAYING_DATES),
+                                new TypeReference<List<Date>>() {
+                                });
 
-        
-        int         count = 0;
+        int count = 0;
         Collections.sort(observations);
-        for(WeatherObservation weatherObj: observations)
-        {
-                
-                weatherObj.setTimeMeasured(wUtil.pragmaticAdjustmentToMidnight(weatherObj.getTimeMeasured(), timeZone));
-                
-                Date    sprayDate   =   null;
-                
-                switch(weatherObj.getElementMeasurementTypeId())
-                {
-                
-                    case    DataMatrix.TEMPERATURE_MEAN:
-                        dateHourlyTm_currentDay                                     =   trimmedDate(weatherObj.getTimeMeasured(),timeZone);
-                        if(weatherObj.getLogIntervalId().equals(WeatherObservation.LOG_INTERVAL_ID_1H))
-                        {
-                            WeatherObservation      altanariaWeatherBO_tm_hourly    =   weatherObj;
-                            if  (
-                                        (null != dateHourlyTm_currentDay )
-                                    &&  (null != dateHourlyTm_previousDay)
-                                    &&  dateHourlyTm_currentDay.after   (
-                                                                            dateHourlyTm_previousDay
-                                                                        )
-                                )
-                            {
-                                double counterTMHourly     =    0;
-                                
-                                //TODO calculation of accumulation value and add to daily
-                                for(WeatherObservation wo: altenariaWeatherLIstHourly_tm)
-                                {
-                                    counterTMHourly                 =       counterTMHourly + wo.getValue();
+        for (WeatherObservation weatherObj : observations) {
 
+            weatherObj.setTimeMeasured(wUtil.pragmaticAdjustmentToMidnight(weatherObj.getTimeMeasured(), timeZone));
+
+            Date sprayDate = null;
+
+            switch (weatherObj.getElementMeasurementTypeId()) {
+
+                case DataMatrix.TEMPERATURE_MEAN:
+                    dateHourlyTm_currentDay = trimmedDate(weatherObj.getTimeMeasured(), timeZone);
+                    if (weatherObj.getLogIntervalId().equals(WeatherObservation.LOG_INTERVAL_ID_1H)) {
+                        WeatherObservation altanariaWeatherBO_tm_hourly = weatherObj;
+                        if ((null != dateHourlyTm_currentDay)
+                                && (null != dateHourlyTm_previousDay)
+                                && dateHourlyTm_currentDay.after(
+                                        dateHourlyTm_previousDay)) {
+                            double counterTMHourly = 0;
+
+                            // TODO calculation of accumulation value and add to daily
+                            for (WeatherObservation wo : altenariaWeatherLIstHourly_tm) {
+                                counterTMHourly = counterTMHourly + wo.getValue();
+
+                            }
+                            // average value of temperature for a day
+                            dataMatrix.setParamDoubleValueForDate(dateHourlyTm_previousDay, DataMatrix.TEMPERATURE_MEAN,
+                                    (counterTMHourly
+                                            /
+                                            altenariaWeatherLIstHourly_tm.size()));
+
+                            // discard old value for next day and start fresh
+                            altenariaWeatherLIstHourly_tm = new ArrayList<WeatherObservation>();
+                        }
+
+                        altenariaWeatherLIstHourly_tm.add(altanariaWeatherBO_tm_hourly);
+                    }
+
+                    if (weatherObj.getLogIntervalId().equals(WeatherObservation.LOG_INTERVAL_ID_1D)) {
+                        if ((null == dataMatrix.getParamDoubleValueForDate(dateHourlyTm_currentDay,
+                                DataMatrix.TEMPERATURE_MEAN))
+                                ||
+                                ((dataMatrix.getParamDoubleValueForDate(dateHourlyTm_currentDay,
+                                        DataMatrix.TEMPERATURE_MEAN)).intValue() == 0)) {
+                            dataMatrix.setParamDoubleValueForDate(
+                                    weatherObj.getTimeMeasured() // TODO - Might be the date need to be trimmed
+                                    , DataMatrix.TEMPERATURE_MEAN, weatherObj.getValue());
+                        }
+                    }
+
+                    break;
+
+                case DataMatrix.LEAF_WETNESS_DURATION:
+                    dateHourlyLw_currentDay = trimmedDate(weatherObj.getTimeMeasured(), timeZone);
+                    if (weatherObj.getLogIntervalId().equals(WeatherObservation.LOG_INTERVAL_ID_1H)) {
+                        WeatherObservation altanariaWeatherBO_lw_hourly = weatherObj;
+                        if (null != dateHourlyLw_currentDay
+                                && null != dateHourlyLw_previousDay
+                                && dateHourlyLw_currentDay.after(dateHourlyLw_previousDay)) {
+                            int counterLwHourly = 0;
+                            for (WeatherObservation wo : altenariaWeatherLIstHourly_lw) {
+                                if (wo.getValue() >= THRESHOLD_LW) {
+                                    counterLwHourly = counterLwHourly + 1;
                                 }
-                                //average value of temperature for a day
-                                dataMatrix.setParamDoubleValueForDate   (       dateHourlyTm_previousDay
-                                                                            ,   DataMatrix.TEMPERATURE_MEAN
-                                                                            ,   (
-                                                                                    counterTMHourly
-                                                                                    /
-                                                                                    altenariaWeatherLIstHourly_tm.size()
-                                                                                )
-                                                                        );
-
-                                    //discard old value for next day and start fresh
-                                    altenariaWeatherLIstHourly_tm  =        new ArrayList<WeatherObservation>();
                             }
 
-                                    altenariaWeatherLIstHourly_tm.add(altanariaWeatherBO_tm_hourly);
+                            dataMatrix.setParamIntValueForDate(
+                                    dateHourlyLw_previousDay, DataMatrix.LEAF_WETNESS_DURATION, counterLwHourly);
+
+                            altenariaWeatherLIstHourly_lw = new ArrayList<WeatherObservation>();
                         }
 
-                        if(weatherObj.getLogIntervalId().equals(WeatherObservation.LOG_INTERVAL_ID_1D))
-                        {
-                                    if  (
-                                                (null == dataMatrix.getParamDoubleValueForDate(dateHourlyTm_currentDay, DataMatrix.TEMPERATURE_MEAN) )
-                                            || 
-                                                ((dataMatrix.getParamDoubleValueForDate(dateHourlyTm_currentDay, DataMatrix.TEMPERATURE_MEAN)).intValue() == 0)
-                                        )
-                            {
-                                dataMatrix.setParamDoubleValueForDate   (
-                                                                                weatherObj.getTimeMeasured()  //TODO - Might be the date need to be trimmed
-                                                                            ,   DataMatrix.TEMPERATURE_MEAN
-                                                                            ,   weatherObj.getValue()
-                                                                        );
-                            }
-                        }
-                        
-                        
-                        break; 
-                    
-                    
-                    
-                    case    DataMatrix.LEAF_WETNESS_DURATION:
-                        dateHourlyLw_currentDay                                     =   trimmedDate(weatherObj.getTimeMeasured(),timeZone);
-                        if(weatherObj.getLogIntervalId().equals(WeatherObservation.LOG_INTERVAL_ID_1H))
-                        {
-                            WeatherObservation      altanariaWeatherBO_lw_hourly    =   weatherObj;
-                            if(
-                                        null != dateHourlyLw_currentDay
-                                    &&  null != dateHourlyLw_previousDay 
-                                    &&  dateHourlyLw_currentDay.after(dateHourlyLw_previousDay)
-                                )
-                            {
-                                int counterLwHourly     = 0;
-                                for(WeatherObservation wo: altenariaWeatherLIstHourly_lw)
-                                {
-                                    if(wo.getValue()    >= THRESHOLD_LW )
-                                    {
-                                        counterLwHourly = counterLwHourly + 1;
-                                    }
-                                }
+                        altenariaWeatherLIstHourly_lw.add(altanariaWeatherBO_lw_hourly);
+                    }
 
-                                dataMatrix.setParamIntValueForDate(
-                                                                        dateHourlyLw_previousDay
-                                                                    ,   DataMatrix.LEAF_WETNESS_DURATION
-                                                                    ,   counterLwHourly
-                                                                   );
-                                
-                                altenariaWeatherLIstHourly_lw   =   new ArrayList<WeatherObservation>();
-                            }
-
-                                altenariaWeatherLIstHourly_lw.add(altanariaWeatherBO_lw_hourly);
-                        }
-                                
-                        break;
-                                
-                    
-                }
-
-        if(null != sprayingDates && sprayingDates.size() != 0) 
-        {
-            for (Date spDate:sprayingDates)
-            {
-                spDate  = trimmedDate(spDate, timeZone);
-                if(
-                        (null != spDate && (null != dateHourlyTm_previousDay ) && (null != dateHourlyLw_previousDay))
-                        &&
-                            (
-                                     ( spDate.compareTo(dateHourlyTm_previousDay)== 0 || spDate.before(dateHourlyTm_previousDay) )
-                                ||  ( spDate.compareTo(dateHourlyLw_previousDay)== 0 || spDate.before(dateHourlyLw_previousDay) )
-                            )
-                  )
-                {
-                    sprayDate   = trimmedDate(spDate, timeZone);
-                }
+                    break;
 
             }
-        }         
-            //Setting DSV values to dataMatrix
-            setDSV(dataMatrix
-                    ,   dateHourlyTm_previousDay
-                    ,   DataMatrix.TEMPERATURE_MEAN
-                    ,   dateHourlyLw_previousDay
-                    ,   DataMatrix.LEAF_WETNESS_DURATION
-                    ,   sprayDate
-                   );
+
+            if (null != sprayingDates && sprayingDates.size() != 0) {
+                for (Date spDate : sprayingDates) {
+                    spDate = trimmedDate(spDate, timeZone);
+                    if ((null != spDate && (null != dateHourlyTm_previousDay) && (null != dateHourlyLw_previousDay))
+                            &&
+                            ((spDate.compareTo(dateHourlyTm_previousDay) == 0
+                                    || spDate.before(dateHourlyTm_previousDay))
+                                    || (spDate.compareTo(dateHourlyLw_previousDay) == 0
+                                            || spDate.before(dateHourlyLw_previousDay)))) {
+                        sprayDate = trimmedDate(spDate, timeZone);
+                    }
+
+                }
+            }
+            // Setting DSV values to dataMatrix
+            setDSV(dataMatrix, dateHourlyTm_previousDay, DataMatrix.TEMPERATURE_MEAN, dateHourlyLw_previousDay,
+                    DataMatrix.LEAF_WETNESS_DURATION, sprayDate);
 
             dateHourlyTm_previousDay = dateHourlyTm_currentDay;
             dateHourlyLw_previousDay = dateHourlyLw_currentDay;
-            
+
         }
-   
-          //LOGGER.log(Level.INFO, dataMatrix.toString());
+
+        // LOGGER.log(Level.INFO, dataMatrix.toString());
     }
 
-  
-    
     /**
-     * method name  : getDSV
+     * method name : getDSV
+     * 
      * @param temp
      * @param lw
-     * @return 
-     * purpose      :   DSV (Daily Severity Value) calculation based on mean temperature
-     *                  and Leaf Wetness
+     * @return
+     *         purpose : DSV (Daily Severity Value) calculation based on mean
+     *         temperature
+     *         and Leaf Wetness
      */
-    public int getDSV_DAILY(double temp, int lw )
-    {
+    public int getDSV_DAILY(double temp, int lw) {
         int dsvResult = 0;
 
-        if ((temp >= 10  && temp <= 17) && (lw <= 6))                   dsvResult  =    0;
-        if ((temp >= 10  && temp <= 17) && (lw >= 7  && lw  <= 15 ))    dsvResult  =    1;
-        if ((temp >= 10  && temp <= 17) && (lw >= 16 && lw  <= 20 ))    dsvResult  =    2;
-        if ((temp >= 10  && temp <= 17) && (lw > 21 ))                  dsvResult  =    3;
-        
-        if ((temp >= 18  && temp <= 20) && (lw <= 3 ))                  dsvResult =     0;
-        if ((temp >= 18  && temp <= 20) && (lw >= 4  && lw <= 8 ))      dsvResult =     1;
-        if ((temp >= 18  && temp <= 20) && (lw >= 9  && lw <= 15))      dsvResult =     2;
-        if ((temp >= 18  && temp <= 20) && (lw >= 16 && lw <= 22))      dsvResult =     3;
-        if ((temp >= 18  && temp <= 20) && (lw >= 23))                  dsvResult =     4;
-        
-        if ((temp >= 21  && temp <= 25) && (lw <= 2 ))                  dsvResult =     0;
-        if ((temp >= 21  && temp <= 25) && (lw >= 3  && lw <= 5 ))      dsvResult =     1;
-        if ((temp >= 21  && temp <= 25) && (lw >= 6  && lw <= 12))      dsvResult =     2;
-        if ((temp >= 21  && temp <= 25) && (lw >= 13 && lw <= 20))      dsvResult =     3;
-        if ((temp >= 21  && temp <= 25) && (lw >= 21))                  dsvResult =     4;
-        
-        if ((temp >= 26  && temp <= 29) && (lw <= 3))                   dsvResult =     0;
-        if ((temp >= 26  && temp <= 29) && (lw >= 4  && lw <= 8))       dsvResult =     1;
-        if ((temp >= 26  && temp <= 29) && (lw >= 9  && lw <= 15))      dsvResult =     2;
-        if ((temp >= 26  && temp <= 29) && (lw >= 16 && lw <= 22))      dsvResult =     3;
-        if ((temp >= 26  && temp <= 29) && (lw >= 23 ))                 dsvResult =     4;
-        
-        
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw <= 6))
+            dsvResult = 0;
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw >= 7 && lw <= 15))
+            dsvResult = 1;
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw >= 16 && lw <= 20))
+            dsvResult = 2;
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw > 21))
+            dsvResult = 3;
+
+        if ((temp >= 18 && temp <= 20) && (lw <= 3))
+            dsvResult = 0;
+        if ((temp >= 18 && temp <= 20) && (lw >= 4 && lw <= 8))
+            dsvResult = 1;
+        if ((temp >= 18 && temp <= 20) && (lw >= 9 && lw <= 15))
+            dsvResult = 2;
+        if ((temp >= 18 && temp <= 20) && (lw >= 16 && lw <= 22))
+            dsvResult = 3;
+        if ((temp >= 18 && temp <= 20) && (lw >= 23))
+            dsvResult = 4;
+
+        if ((temp >= 21 && temp <= 25) && (lw <= 2))
+            dsvResult = 0;
+        if ((temp >= 21 && temp <= 25) && (lw >= 3 && lw <= 5))
+            dsvResult = 1;
+        if ((temp >= 21 && temp <= 25) && (lw >= 6 && lw <= 12))
+            dsvResult = 2;
+        if ((temp >= 21 && temp <= 25) && (lw >= 13 && lw <= 20))
+            dsvResult = 3;
+        if ((temp >= 21 && temp <= 25) && (lw >= 21))
+            dsvResult = 4;
+
+        if ((temp >= 26 && temp <= 29) && (lw <= 3))
+            dsvResult = 0;
+        if ((temp >= 26 && temp <= 29) && (lw >= 4 && lw <= 8))
+            dsvResult = 1;
+        if ((temp >= 26 && temp <= 29) && (lw >= 9 && lw <= 15))
+            dsvResult = 2;
+        if ((temp >= 26 && temp <= 29) && (lw >= 16 && lw <= 22))
+            dsvResult = 3;
+        if ((temp >= 26 && temp <= 29) && (lw >= 23))
+            dsvResult = 4;
+
         return dsvResult;
     }
-    
+
     /**
      * Get a trimmed date without hour,minute,second,milli second
+     * 
      * @param date
-     * @return 
+     * @return
      */
-    private Date trimmedDate(Date date, TimeZone timezone)
-    {
-        Date        resultDate  = date; 
-        Calendar     calendar   =  Calendar.getInstance();
+    private Date trimmedDate(Date date, TimeZone timezone) {
+        Date resultDate = date;
+        Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(timezone);
         calendar.setTime(resultDate);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
-        calendar.set(Calendar.MILLISECOND,0);
-        
-        return   calendar.getTime();
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
     }
 
     /**
      * Set DSV values to the DataMatrix in HashMap
+     * 
      * @param dataMatrix
      * @param tmDate
      * @param tmFlag
      * @param lwDate
-     * @param lwFlag 
+     * @param lwFlag
      */
     private void setDSV(
-            DataMatrix dataMatrix, Date tmDate, String tmFlag, Date lwDate, String lwFlag, Date sprayDate)
-    {
-        int     resultDSV_tm           =   0;
-        int     resultDSV_lw           =   0;
-        
-        
-        if((null != tmDate) && (null != lwDate))
-        {
-  
-                    resultDSV_tm    =   getDSV_DAILY(
-                                                            getMeanTeamperature(dataMatrix,tmDate,tmFlag)
-                                                        ,  
-                                                            getLeafWetnessHour(dataMatrix,tmDate,lwFlag)
-                                                    );
-                    
-                                                    
-                    dataMatrix.setParamStringValueForDate(tmDate, DataMatrix.SPRAYING_DATE, NO);
-                    dataMatrix.setParamIntValueForDate(tmDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE, resultDSV_tm);
-                    if(null != sprayDate ) 
-                    {
-                      if (tmDate.compareTo(sprayDate)== 0 || sprayDate.before(tmDate))
-                      {
-                          dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, YES);
-                      }
-                      else if(null == sprayDate || sprayDate.after(tmDate))
-                            {
-                                dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, NO);
-                            }
-                      
-                     }
-                    
-                        
-                    
-                    
-                    
-                    resultDSV_lw    =   getDSV_DAILY(
-                                        getMeanTeamperature(dataMatrix,lwDate,tmFlag)
-                                    ,  
-                                        getLeafWetnessHour(dataMatrix,lwDate,lwFlag)
-                                );
-                    
-                    dataMatrix.setParamStringValueForDate(lwDate, DataMatrix.SPRAYING_DATE, NO);
-                    dataMatrix.setParamIntValueForDate(lwDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE, resultDSV_lw);
-                    
+            DataMatrix dataMatrix, Date tmDate, String tmFlag, Date lwDate, String lwFlag, Date sprayDate) {
+        int resultDSV_tm = 0;
+        int resultDSV_lw = 0;
 
-                        if(null != sprayDate)
-                        {
-                            if ((lwDate.compareTo(sprayDate)== 0) || sprayDate.before(lwDate))
-                            {
-                                dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, YES);
-                            }
-                            else if(null == sprayDate || sprayDate.after(lwDate))
-                            {
-                                dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, NO);
-                            }
-                        }
-                        
-                    
-                    
-                    
-                    
-                    
-                    
+        if ((null != tmDate) && (null != lwDate)) {
+
+            resultDSV_tm = getDSV_DAILY(
+                    getMeanTeamperature(dataMatrix, tmDate, tmFlag),
+                    getLeafWetnessHour(dataMatrix, tmDate, lwFlag));
+
+            dataMatrix.setParamStringValueForDate(tmDate, DataMatrix.SPRAYING_DATE, NO);
+            dataMatrix.setParamIntValueForDate(tmDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE, resultDSV_tm);
+            if (null != sprayDate) {
+                if (tmDate.compareTo(sprayDate) == 0 || sprayDate.before(tmDate)) {
+                    dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, YES);
+                } else if (null == sprayDate || sprayDate.after(tmDate)) {
+                    dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, NO);
+                }
+
+            }
+
+            resultDSV_lw = getDSV_DAILY(
+                    getMeanTeamperature(dataMatrix, lwDate, tmFlag),
+                    getLeafWetnessHour(dataMatrix, lwDate, lwFlag));
+
+            dataMatrix.setParamStringValueForDate(lwDate, DataMatrix.SPRAYING_DATE, NO);
+            dataMatrix.setParamIntValueForDate(lwDate, DataMatrix.DAILY_DISEASE_SEVERITY_VALUE, resultDSV_lw);
+
+            if (null != sprayDate) {
+                if ((lwDate.compareTo(sprayDate) == 0) || sprayDate.before(lwDate)) {
+                    dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, YES);
+                } else if (null == sprayDate || sprayDate.after(lwDate)) {
+                    dataMatrix.setParamStringValueForDate(sprayDate, DataMatrix.SPRAYING_DATE, NO);
+                }
+            }
+
         }
-        
+
     }
-    
+
     /**
      * 
      * @param dataMatrix
      * @param tmDate
      * @param tmFlag
-     * @return 
+     * @return
      */
-    private double getMeanTeamperature (    DataMatrix dataMatrix
-                                        ,    Date tmDate
-                                        ,   String tmFlag
-                                        )
-    {
-        return     (null ==  dataMatrix.getParamDoubleValueForDate(tmDate, tmFlag))
-                                            ?   0.0
-                                            :   dataMatrix.getParamDoubleValueForDate(tmDate, tmFlag);
+    private double getMeanTeamperature(DataMatrix dataMatrix, Date tmDate, String tmFlag) {
+        return (null == dataMatrix.getParamDoubleValueForDate(tmDate, tmFlag))
+                ? 0.0
+                : dataMatrix.getParamDoubleValueForDate(tmDate, tmFlag);
     }
-            
+
     /**
      * 
      * @param dataMatrix
      * @param lwDate
      * @param lwFlag
-     * @return 
+     * @return
      */
-    private int     getLeafWetnessHour(
-                                        DataMatrix dataMatrix
-                                    ,   Date lwDate
-                                    ,   String lwFlag
-                                    )
-    {
-            return (null == dataMatrix.getParamIntValueForDate(lwDate, lwFlag))
-                                            ?   0
-                                            :   dataMatrix.getParamIntValueForDate(lwDate, lwFlag);
+    private int getLeafWetnessHour(
+            DataMatrix dataMatrix, Date lwDate, String lwFlag) {
+        return (null == dataMatrix.getParamIntValueForDate(lwDate, lwFlag))
+                ? 0
+                : dataMatrix.getParamIntValueForDate(lwDate, lwFlag);
     }
-    
-    private Integer getWarningStatus(Integer accumulatedDSV)
-    {
-        Integer result  = 0;
-        
+
+    private Integer getWarningStatus(Integer accumulatedDSV) {
+        Integer result = 0;
+
         /*
-           Hint of warning system
-            1 = Missing data (Blue) - OK
+         * Hint of warning system
+         * 1 = Missing data (Blue) - OK
+         * 
+         * 2 = No Risk (Green) – From 0 to DSV-threshold minus 5
+         * 
+         * 3 = Possible Risk (Yellow) – From DSV-threshold minus 5 to DSV-threshold
+         * 
+         * 4 = High Risk (Red) – {Above DSV-threshold
+         */
 
-            2 = No Risk (Green) – From 0 to DSV-threshold minus 5
-
-            3 = Possible Risk (Yellow) – From DSV-threshold minus 5 to DSV-threshold
-
-            4 = High Risk (Red) – {Above DSV-threshold
-        */
-  
-        if (accumulatedDSV >= 0)
-        {
-            if(accumulatedDSV >= THRESHOLD_DSV_MAX)
-            {
+        if (accumulatedDSV >= 0) {
+            if (accumulatedDSV >= THRESHOLD_DSV_MAX) {
                 result = Result.WARNING_STATUS_HIGH_RISK;
-            }
-            else
-            {
+            } else {
                 // e.g. 20 -- 30
-                if((accumulatedDSV < THRESHOLD_DSV_MAX) && (accumulatedDSV >= (THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX)) )
-                {
+                if ((accumulatedDSV < THRESHOLD_DSV_MAX)
+                        && (accumulatedDSV >= (THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX))) {
                     result = Result.WARNING_STATUS_MINOR_RISK;
-                }
-                else
-                {
-                    if(accumulatedDSV < (THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX))
-                    {
+                } else {
+                    if (accumulatedDSV < (THRESHOLD_DSV_MAX - THRESHOLD_DSV_DIFF_MIN_MAX)) {
                         result = Result.WARNING_STATUS_NO_RISK;
                     }
 
                 }
 
             }
+        } else {
+            result = Result.WARNING_STATUS_NO_WARNING_MISSING_DATA;
+
         }
-        else
-        {
-             result = Result.WARNING_STATUS_NO_WARNING_MISSING_DATA;
-             
-        }
-        
+
         return result;
     }
+
 }
