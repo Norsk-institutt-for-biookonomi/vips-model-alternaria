@@ -39,13 +39,17 @@ package no.nibio.vips.model.alternariamodel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -222,22 +226,10 @@ public class AlternariaModel extends I18nImpl implements Model {
         return this.getText("name", language);
     }
 
+
     @Override
     public String getLicense() {
-        /**
-         * method name : getLicense
-         * 
-         * @param :
-         * @return : java.lang.String
-         *
-         *         purpose :
-         *
-         *         date : Expression date is undefined on line 20, column 19 in
-         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
-         *         undefined on line 20, column 27 in
-         *         Templates/Classes/Code/GeneratedMethodBody.
-         */
-        return this.getText("license", Model.DEFAULT_LANGUAGE);
+        return this.modelUtil.getTextFromFileInJar(this.getClass(), "/LICENSE_header.txt");
     }
 
     @Override
@@ -377,26 +369,13 @@ public class AlternariaModel extends I18nImpl implements Model {
     }
 
     /**
-     * TODO
      * 
-     * @return
+     * 
+     * @return a Json configuration example
      */
     @Override
     public String getSampleConfig() {
-        /**
-         * method name : getSampleConfig
-         * 
-         * @param :
-         * @return : java.lang.String
-         *
-         *         purpose :
-         *
-         *         date : Expression date is undefined on line 20, column 19 in
-         *         Templates/Classes/Code/GeneratedMethodBody. Expression time is
-         *         undefined on line 20, column 27 in
-         *         Templates/Classes/Code/GeneratedMethodBody.
-         */
-        return this.getText("sampleconfig", Model.DEFAULT_LANGUAGE);
+        return this.modelUtil.getTextFromFileInJar(this.getClass(), "/sample_config.json");
     }
 
     /**
@@ -743,4 +722,5 @@ public class AlternariaModel extends I18nImpl implements Model {
 
         return result;
     }
+
 }

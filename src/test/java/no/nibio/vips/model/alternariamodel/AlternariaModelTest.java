@@ -246,9 +246,8 @@ public class AlternariaModelTest {
     public void testGetLicense() {
         System.out.println("getLicense");
         AlternariaModel instance = new AlternariaModel();
-        String expResult = "";
         String result = instance.getLicense();
-        assertNotNull(result);
+        assertTrue(result.contains("GNU Affero"));
     }
 
     /**
@@ -348,15 +347,13 @@ public class AlternariaModelTest {
 
     /**
      * Test of getSampleConfig method, of class AlternariaModel.
-     * TODO - Recheck the functionality
      */
     @org.junit.jupiter.api.Test
     public void testGetSampleConfig() {
         System.out.println("getSampleConfig");
         AlternariaModel instance = new AlternariaModel();
-        String expResult = "";
         String result = instance.getSampleConfig();
-        assertNotNull(result);
+        assertTrue(result.contains("configParameters"));
     }
 
     /**
