@@ -544,46 +544,46 @@ public class AlternariaModel extends I18nImpl implements Model {
     public int getDSV_DAILY(double temp, int lw) {
         int dsvResult = 0;
 
-        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw <= 6))
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp < 18) && (lw < 7))
             dsvResult = 0;
-        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw >= 7 && lw <= 15))
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp < 18) && (lw >= 7 && lw < 16))
             dsvResult = 1;
-        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw >= 16 && lw <= 20))
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp < 18) && (lw >= 16 && lw < 21))
             dsvResult = 2;
-        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp <= 17) && (lw > 21))
+        if ((temp >= this.THRESHOLD_DSV_TEMP_MIN && temp < 18) && (lw >= 21))
             dsvResult = 3;
 
-        if ((temp >= 18 && temp <= 20) && (lw <= 3))
+        if ((temp >= 18 && temp < 21) && (lw < 4))
             dsvResult = 0;
-        if ((temp >= 18 && temp <= 20) && (lw >= 4 && lw <= 8))
+        if ((temp >= 18 && temp < 21) && (lw >= 4 && lw < 9))
             dsvResult = 1;
-        if ((temp >= 18 && temp <= 20) && (lw >= 9 && lw <= 15))
+        if ((temp >= 18 && temp < 21) && (lw >= 9 && lw < 16))
             dsvResult = 2;
-        if ((temp >= 18 && temp <= 20) && (lw >= 16 && lw <= 22))
+        if ((temp >= 18 && temp < 21) && (lw >= 16 && lw < 23))
             dsvResult = 3;
-        if ((temp >= 18 && temp <= 20) && (lw >= 23))
+        if ((temp >= 18 && temp < 21) && (lw >= 23))
             dsvResult = 4;
 
-        if ((temp >= 21 && temp <= 25) && (lw <= 2))
+        if ((temp >= 21 && temp < 26) && (lw < 3))
             dsvResult = 0;
-        if ((temp >= 21 && temp <= 25) && (lw >= 3 && lw <= 5))
+        if ((temp >= 21 && temp < 26) && (lw >= 3 && lw < 6))
             dsvResult = 1;
-        if ((temp >= 21 && temp <= 25) && (lw >= 6 && lw <= 12))
+        if ((temp >= 21 && temp < 26) && (lw >= 6 && lw < 13))
             dsvResult = 2;
-        if ((temp >= 21 && temp <= 25) && (lw >= 13 && lw <= 20))
+        if ((temp >= 21 && temp < 26) && (lw >= 13 && lw < 21))
             dsvResult = 3;
-        if ((temp >= 21 && temp <= 25) && (lw >= 21))
+        if ((temp >= 21 && temp < 26) && (lw >= 21))
             dsvResult = 4;
 
-        if ((temp >= 26 && temp <= 29) && (lw <= 3))
+        if ((temp >= 26 && temp < 30) && (lw < 4))
             dsvResult = 0;
-        if ((temp >= 26 && temp <= 29) && (lw >= 4 && lw <= 8))
+        if ((temp >= 26 && temp < 30) && (lw >= 4 && lw < 9))
             dsvResult = 1;
-        if ((temp >= 26 && temp <= 29) && (lw >= 9 && lw <= 15))
+        if ((temp >= 26 && temp < 30) && (lw >= 9 && lw < 16))
             dsvResult = 2;
-        if ((temp >= 26 && temp <= 29) && (lw >= 16 && lw <= 22))
+        if ((temp >= 26 && temp < 30) && (lw >= 16 && lw < 23))
             dsvResult = 3;
-        if ((temp >= 26 && temp <= 29) && (lw >= 23))
+        if ((temp >= 26 && temp < 30) && (lw >= 23))
             dsvResult = 4;
 
         return dsvResult;
