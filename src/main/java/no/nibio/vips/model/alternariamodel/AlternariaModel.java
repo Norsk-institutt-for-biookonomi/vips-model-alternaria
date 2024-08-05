@@ -114,6 +114,7 @@ public class AlternariaModel extends I18nImpl implements Model {
         // Date currentDate =
         // this.dataMatrix.getFirstDateWithParameterValue(DataMatrix.LEAF_WETNESS_DURATION);
         List<Result> results = new ArrayList<>();
+        //System.out.println(dataMatrix.toCSV());
 
         Date currentDate = this.dataMatrix.getFirstDateWithParameterValue(DataMatrix.TEMPERATURE_MEAN);
         Date endDate = this.dataMatrix.getLastDateWithParameterValue(DataMatrix.TEMPERATURE_MEAN);

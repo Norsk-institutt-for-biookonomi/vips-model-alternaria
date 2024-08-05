@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,8 @@ import no.nibio.vips.entity.ModelConfiguration;
 import no.nibio.vips.entity.Result;
 import no.nibio.vips.entity.WeatherObservation;
 import no.nibio.vips.model.ModelId;
+import no.nibio.vips.util.DateUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,6 +118,38 @@ public class AlternariaModelTest {
             System.out.println(res.toString());
         }
        */ 
+        
+        
+    }
+
+    @org.junit.jupiter.api.Test
+    public void testGetResult2024() throws Exception {
+        System.out.println("getResult2024");
+        ModelConfiguration config   = this.getConfiguration("/kvelde_weatherdata.json");
+        List<Date> sprayingDates  =  List.of(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse("2024-07-17T22:00:00+0000"));
+        config.setConfigParameter("sprayingDates", sprayingDates); 
+        AlternariaModel instance = new AlternariaModel();
+        instance.setConfiguration(config);
+        List<Result> result = instance.getResult();
+        assertNotNull(result);
+       
+        // Test DSV SUM
+        Date testDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").parse("2024-07-15T22:00:00+0000");
+        for(Result res:result)
+        {
+            if(res.getValidTimeStart().equals(testDate))
+            {
+                assertEquals("28",res.getValue("ALTERNARIA", "DSV_SUM"));
+            }
+        }
+       
+        /* 
+        for(Result res:result)
+        {
+            // LOGGER.log(Level.INFO, res.toString());
+            System.out.println(res.toString());
+        }*/
+        
         
         
     }
