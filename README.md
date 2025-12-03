@@ -1,5 +1,7 @@
 # AlternariaModel (TOMCAST)
 
+&copy; [NIBIO](https://nibio.no/en)
+
 <img src="src/main/resources/images/ef-20200421-altenaria.jpg" description="Photo: S. Abrahamsen, NLR"/>
 
 _Photo: S. Abrahamsen, NLR_
@@ -23,7 +25,7 @@ The model will be green (no risk) until it reaches 15. From this value the warni
 ## Development
 Requirements:
 * Maven
-* Java 11
+* Java 17
 
 Clone Gitlab repository
 
@@ -32,7 +34,10 @@ $ git clone https://gitlab.nibio.no/VIPS/models/java/Model_ALTERNARIA.git
 $ cd Model_ALTERNARIA
 ```
 
-Build
+### Compile, run tests
+```bash
+mvn clean install
 ```
-$ mvn install
-```
+
+### Deploy to VIPSCore
+See [the VIPSCore README](https://gitlab.nibio.no/VIPS/VIPSCore)
